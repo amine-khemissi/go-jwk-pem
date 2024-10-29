@@ -162,7 +162,7 @@ func cmdRetrievePublicKeyFromToken(c *cli.Context) error {
 	byteArr, err := getJWK(url)
 	jwsKeys := JWKeys{}
 	if err = json.Unmarshal([]byte(byteArr), &jwsKeys); err != nil {
-		fmt.Println(err)
+		return fmt.Errorf("failed to unmarshal jwsKeys: %w", err)
 	}
 
 	// Extract public key
@@ -178,6 +178,9 @@ func cmdRetrievePublicKey(c *cli.Context) error {
 	// Call to retrieve JWKs - this assumes full URL has been given
 	// to path where JWKs are to be retrieved from
 	byteArr, err := getJWK(url)
+	if err != nil {
+		return fmt.Errorf("failed to get jwk: %w", err)
+	}
 
 	// retrrieve JWKs from the server
 	jwsKeys := JWKeys{}
@@ -210,16 +213,6 @@ func cmdRetrievePublicKeyFromFile(c *cli.Context) error {
 	extractPublicKeyFromJWK(jwsKeys, c.GlobalString("out"), c.String("kid"), c.Bool("show-kid"))
 
 	return nil
-}
-
-// getJWK  retrieves JWKs from the provided fileName
-func getJWKFromFile(fileName string) ([]byte, error) {
-
-	data, err := os.ReadFile(fileName)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read file: %v", err)
-	}
-	return data, nil
 }
 
 // getJWK  retrieves JWKs from the provided URL
