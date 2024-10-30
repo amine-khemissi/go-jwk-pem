@@ -91,7 +91,7 @@ func main() {
 					Name:  "show-kid",
 					Usage: "When more keys exists shows kid for every key",
 				},
-				cli.BoolFlag{
+				cli.StringFlag{
 					Name:  "resolver",
 					Usage: "ip addr of the dns resolver",
 				},
