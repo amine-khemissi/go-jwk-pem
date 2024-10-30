@@ -199,7 +199,10 @@ func cmdRetrievePublicKeyFromToken(c *cli.Context) error {
 func cmdRetrievePublicKey(c *cli.Context) error {
 	verifyArgumentByName(c, "url")
 	url := c.String("url")
-
+	resolver := c.String("resolver")
+	if resolver != "" {
+		changeResolver(resolver)
+	}
 	// Call to retrieve JWKs - this assumes full URL has been given
 	// to path where JWKs are to be retrieved from
 	byteArr, err := getJWK(url)
@@ -222,10 +225,7 @@ func cmdRetrievePublicKey(c *cli.Context) error {
 func cmdRetrievePublicKeyFromFile(c *cli.Context) error {
 	verifyArgumentByName(c, "file")
 	fileName := c.String("file")
-	resolver := c.String("resolver")
-	if resolver != "" {
-		changeResolver(resolver)
-	}
+
 	// Call to retrieve JWKs - this assumes full URL has been given
 	// to path where JWKs are to be retrieved from
 	data, err := os.ReadFile(fileName)
