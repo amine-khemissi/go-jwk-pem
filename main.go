@@ -172,7 +172,7 @@ func cmdRetrievePublicKeyFromToken(c *cli.Context) error {
 }
 
 func cmdRetrievePublicKey(c *cli.Context) error {
-	verifyArgumentByName(c, "file")
+	verifyArgumentByName(c, "url")
 	url := c.String("url")
 
 	// Call to retrieve JWKs - this assumes full URL has been given
