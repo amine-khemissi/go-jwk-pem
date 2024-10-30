@@ -10,7 +10,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"math/big"
 	"net"
@@ -280,7 +280,10 @@ func getJWK(url string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	byt, err := ioutil.ReadAll(resp.Body)
+	if resp.StatusCode >= http.StatusMultipleChoices {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+	byt, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
