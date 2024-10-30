@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/rsa"
 	"crypto/x509"
@@ -122,6 +123,23 @@ func main() {
 
 			Action: cmdRetrievePublicKeyFromFile,
 		},
+		{
+			Name:  "from-stdin",
+			Usage: "Get public key from JWKs",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "kid",
+					Value: "*",
+					Usage: "Select specific kid - otherwise query all",
+				},
+				cli.BoolFlag{
+					Name:  "show-kid",
+					Usage: "When more keys exists shows kid for every key",
+				},
+			},
+
+			Action: cmdRetrievePublicKeyFromStdin,
+		},
 	}
 
 	sort.Sort(cli.FlagsByName(app.Flags))
@@ -204,9 +222,32 @@ func cmdRetrievePublicKeyFromFile(c *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to read file: %v", err)
 	}
-	// retrrieve JWKs from the server
+	// retrieve JWKs from the server
 	jwsKeys := JWKeys{}
 	if err = json.Unmarshal(data, &jwsKeys); err != nil {
+		return fmt.Errorf("failed to unmarshal json content: %w ", err)
+	}
+	// Extract public key
+	extractPublicKeyFromJWK(jwsKeys, c.GlobalString("out"), c.String("kid"), c.Bool("show-kid"))
+
+	return nil
+}
+
+func cmdRetrievePublicKeyFromStdin(c *cli.Context) error {
+
+	data := make([]byte, 0)
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		data = append(data, scanner.Bytes()...)
+	}
+
+	if scanner.Err() != nil {
+		return fmt.Errorf("failed to read stdin: %v", scanner.Err())
+	}
+
+	// retrieve JWKs from the server
+	jwsKeys := JWKeys{}
+	if err := json.Unmarshal(data, &jwsKeys); err != nil {
 		return fmt.Errorf("failed to unmarshal json content: %w ", err)
 	}
 	// Extract public key
