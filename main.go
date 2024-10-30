@@ -73,7 +73,7 @@ func main() {
 	app.Commands = []cli.Command{
 		{
 			Name:  "from-server",
-			Usage: "Get public key from JWKs",
+			Usage: "Get public key from JWKs from an http server",
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:  "url",
@@ -104,7 +104,7 @@ func main() {
 		},
 		{
 			Name:  "from-file",
-			Usage: "Get public key from JWKs",
+			Usage: "Get public key from JWKs from file",
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:  "file",
@@ -125,7 +125,7 @@ func main() {
 		},
 		{
 			Name:  "from-stdin",
-			Usage: "Get public key from JWKs",
+			Usage: "Get public key from JWKs from standard input",
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:  "kid",
