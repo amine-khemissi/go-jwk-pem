@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
@@ -12,10 +13,12 @@ import (
 	"io/ioutil"
 	"log"
 	"math/big"
+	"net"
 	"net/http"
 	"os"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/SermoDigital/jose/jws"
 	"github.com/urfave/cli"
@@ -87,6 +90,10 @@ func main() {
 				cli.BoolFlag{
 					Name:  "show-kid",
 					Usage: "When more keys exists shows kid for every key",
+				},
+				cli.BoolFlag{
+					Name:  "resolver",
+					Usage: "ip addr of the dns resolver",
 				},
 			},
 			Action: cmdRetrievePublicKey,
@@ -215,7 +222,10 @@ func cmdRetrievePublicKey(c *cli.Context) error {
 func cmdRetrievePublicKeyFromFile(c *cli.Context) error {
 	verifyArgumentByName(c, "file")
 	fileName := c.String("file")
-
+	resolver := c.String("resolver")
+	if resolver != "" {
+		changeResolver(resolver)
+	}
 	// Call to retrieve JWKs - this assumes full URL has been given
 	// to path where JWKs are to be retrieved from
 	data, err := os.ReadFile(fileName)
@@ -348,4 +358,31 @@ func verifyArgumentByName(c *cli.Context, argName string) {
 	if c.String(argName) == "" {
 		log.Fatal(fmt.Sprintf("Please provide required argument(s)! [ %s ]", argName))
 	}
+}
+
+func changeResolver(dnsResolverIP string) {
+	fmt.Println("resolver ip:", dnsResolverIP)
+	var (
+		dnsResolverProto     = "udp" // Protocol to use for the DNS resolver
+		dnsResolverTimeoutMs = 5000  // Timeout (ms) for the DNS resolver (optional)
+	)
+
+	dialer := &net.Dialer{
+		Resolver: &net.Resolver{
+			PreferGo: true,
+			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+				d := net.Dialer{
+					Timeout: time.Duration(dnsResolverTimeoutMs) * time.Millisecond,
+				}
+				return d.DialContext(ctx, dnsResolverProto, dnsResolverIP)
+			},
+		},
+	}
+
+	dialContext := func(ctx context.Context, network, addr string) (net.Conn, error) {
+		return dialer.DialContext(ctx, network, addr)
+	}
+
+	http.DefaultTransport.(*http.Transport).DialContext = dialContext
+
 }
