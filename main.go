@@ -371,6 +371,7 @@ func changeResolver(dnsResolverIP string) {
 	)
 
 	dialer := &net.Dialer{
+		Timeout: 5 * time.Second,
 		Resolver: &net.Resolver{
 			PreferGo: true,
 			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
